@@ -10,14 +10,23 @@
 <body>
     <h1>로또 번호 맞추기</h1>
     <div class="container">
-        <input type="text" class="user">
-        <input type="text" class="user">
-        <input type="text" class="user">
-        <input type="text" class="user">
-        <input type="text" class="user">
-        <input type="text" class="user"> <br>
-        <input type="submit" value="확인" class="btn">
-        <input type="reset" value="취소" class="btn">
+        <div id="user-input"><div class="user-num"></div></div>
+        <div id="app">
+            <div class="doors">
+                <div class="door"><div class="boxes"></div></div>
+                <div class="door"><div class="boxes"></div></div>
+                <div class="door"><div class="boxes"></div></div>
+                <div class="door"><div class="boxes"></div></div>
+                <div class="door"><div class="boxes"></div></div>
+                <div class="door"><div class="boxes"></div></div>
+                <div class="plus"> + </div>
+                <div class="door"><div class="boxes"></div></div>
+            </div>
+            <div class="buttons">
+                <button id="spinner">추첨</button>
+                <button id="reseter">다시하기</button>
+            </div>
+        </div>
     </div>
     <script src="lottery_game.js"></script>
 </body>
