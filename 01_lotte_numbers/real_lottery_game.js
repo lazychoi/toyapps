@@ -10,7 +10,7 @@
     for(let i=1; i<46; i++)
     items.push(i);
     
-    // user-input buttons만들기
+    // user-input 만들기
     const userNum = document.querySelector(".user-num");
     for(let i=0; i<items.length; i++)
     {
@@ -20,41 +20,7 @@
         input.classList.add("num");
         userNum.appendChild(input);
     }
-
-    // 로또 번호 생성
-    let pools = [];      // 슬롯머신 숫자묶음 7개 생성
-    let cnt = 0;
-    for(let i=0; i<8; i++)
-    {
-        let pool = ["?"];      // 시작 시 화면에 나타나는 값
-        const arr = [];
-        arr.push(...items);           // arr 배열에 로또 전체 숫자 넣기
-        pool.push(...shuffle(arr));   // 순서 뒤섞어 pool에 넣기 -> 각 pool의 마지막 숫자가 최종 번호
-
-        let isSame = true;
-        while(isSame)         // 당첨번호배열에 같은 숫자가 있으면 다시 돌리기
-        {           
-            if(!lotte.includes(pool[pool.length-1])) { isSame = false; break;}
-            pool = ["?"];                   // 기존 pool을 초기화
-            pool.push(...shuffle(arr));
-        } 
-        lotte.push(pool[pool.length-1]);                   // 당첨번호배열에 당첨번호 넣기
-        
-        pools.push(pool); 
-    }
-
-    // 최종 로또 번호 중복 검사
-    for(let i=0; i<lotte.length-1; i++){
-        for(let j=i+1; j<lotte.length; j++){
-            if ( lotte[i] == lotte[j]) { 
-                console.log("중복 숫자 존재"); 
-                break;
-            }
-        }
-    }
-    // 로또번호 마지막 -> 보너스 번호
-    bonusNum = lotte.splice(6, 1)
-    console.log("로또번호:", lotte, "\n보너스 번호: ", bonusNum)
+    
 
     // 사용자 번호 선택
     const nums = document.querySelectorAll(".num");  // 선택 번호(1-45)
@@ -67,7 +33,7 @@
             {
                 nums[i].classList.add("selected");
                 selectNum.push(parseInt(nums[i].value));
-                console.log(selectNum);
+                console.log("이용자 선택 번호 => ", selectNum);
             } else if (nums[i].className == "num selected")
             {
                 nums[i].classList.remove("selected");
@@ -78,7 +44,7 @@
                         selectNum.splice(j, 1);
                     }
                 }
-                console.log(selectNum);
+                console.log("이용자 선택 번호 => ", selectNum);
             }
         });
     }
@@ -87,48 +53,63 @@
     document.querySelector("#spinner").addEventListener("click", spin);
     document.querySelector("#reseter").addEventListener("click", init);
     document.querySelector("#reseter").addEventListener("click", reset);
-    document.querySelector("#hinter").addEventListener("click", showHint);
 
     async function spin() {
-        cnt = 0;   //pools 내의 pool 순차적 처리용
-        if(selectNum.length < 6) // 이용자 선택 숫자 개수 확인
-        {
-            alert(`숫자 ${selectNum.length}개를 선택했습니다. \n숫자 6개를 선택하세요.`); 
-            return;
-        } else if (selectNum.length > 6)
-        {
-            alert(`숫자 ${selectNum.length}개를 선택했습니다. \n숫자 6개를 선택하세요.`); 
-            return;
-        }
-
-        init(false, 2);                             // 초기화(false=아무 일도 안 함, duration=애니메이션1초)
-        for ( const door of doors)                  // 숫자 안의
-        {                                
+        if(selectNum.length != 6) {alert("먼저 숫자 6개를 선택하세요."); return;}
+        lotte = [];
+        init(false, 2);                               // 초기화(false=아무 일도 안 함, groups=1, duration=애니메이션1초)
+        for ( const door of doors){                                // 숫자 안의
             const boxes = door.querySelector(".boxes");                      // boxes 클래스 선택하여
             const duration = parseInt(boxes.style.transitionDuration);      // 지정된 애니메이션 시간 가져와
             boxes.style.transform = "translateY(0)";                        // boxes를 세로 위끝으로 설정 -> 최종 위치???
             await new Promise((resolve) => setTimeout(resolve, duration * 100));  // ??? 0.1초씩 지연시킴
         }
+        console.log(lotte)
+        // 로또 번호 중복 검사
+        for(let i=0; i<lotte.length-1; i++){
+            for(let j=i+1; j<lotte.length; j++){
+                if ( lotte[i] == lotte[j]) { 
+                    console.log("중복 숫자 존재"); 
+                    break;
+                }
+            }
+        }
         setTimeout(check, 2000);
     }
     
     function init(firstInit = true, duration = 1) {
-        for (const door of doors) 
-        {         
-            if (firstInit)                          
-            {                        
+        for (const door of doors) {         // 각 숫자를 돌며
+            if (firstInit) {                        // firstInit -> 참이면
                 door.dataset.spinned = "0";          // data-spinned -> 0 으로 설정(초기화???)
-            } else if (door.dataset.spinned === "1") // data-spinned -> 1이면(추첨이 끝났으면)
-            {  
+            } else if (door.dataset.spinned === "1") {  // data-spinned -> 1이면(추첨이 끝났으면)
                 return;                             // 아무 것도 안 함
             }
     
             const boxes = door.querySelector(".boxes");  // boxes를
             const boxesClone = boxes.cloneNode(false);  // 복제. 왜???? 해당 node의 children 까지 복제하려면 true, 해당 node 만 복제하려면 false
     
-            if (!firstInit)                 // firstInit -> false이면 
-            {        
+            const pool = ["?"];      // 시작 시 화면에 나타나는 값
+            if (!firstInit) {        // firstInit -> false이면 
+                // 로또 번호 생성
+                const arr = [];
+                arr.push(...items);                            // arr 배열에 로또 전체 숫자 넣기
+                pool.push(...shuffle(arr));                        // 순서 뒤섞어 pool에 넣기 -> 각 pool의 마지막 숫자가 최종 번호
     
+                // console.log("pool", pool[pool.length-1])
+                let isSame = true;
+                while(isSame)         // 당첨번호배열에 같은 숫자가 있으면 다시 돌리기
+                {           
+                    if(!lotte.includes(pool[pool.length-1])) 
+                    { 
+                        isSame = false; 
+                        break;
+                    }
+                    pool.push(...shuffle(arr));
+                } 
+                lotte.push(pool[pool.length-1]);                   // 당첨번호배열에 당첨번호 넣기
+                bonusNum = lotte.splice(6, 1)
+                console.log("로또번호:", lotte, "보너스 번호: ", bonusNum)
+                
                 boxesClone.addEventListener("transitionstart", 
                     function ()                                         // 복제한 박스들이 애니메이션을 시작하면
                     {
@@ -155,8 +136,6 @@
                 );
             }
             
-            let pool = pools[cnt];
-            cnt += 1;
             // console.log(pool);
             for (let i = pool.length - 1; i >= 0; i--)             // 모든 숫자를 거꾸로 순회하며
             {
@@ -184,7 +163,7 @@
         return arr;
     }
 
-    function check()      // 당첨 확인
+    function check()
     {
         let wins = 0;
         let bonus = false;
@@ -213,25 +192,14 @@
         }
     }
 
-    function reset()   // 다시 시작
+    function reset()
     {
-        location.reload();
-    }
-    
-    let h = 0; // 힌트 보여줄 인덱스
-    function showHint() // 힌트 보여주기
-    {
-        if(h<5)
+        selectNum = [];
+        for(let i=0; i<nums.length; i++)
         {
-            let hint = document.querySelector(".hint");
-            let span = document.createElement("span");
-            span.classList.add("hintNum");
-            span.innerText = lotte[h];
-            hint.appendChild(span);
-            h++;
-        } else { alert("더 이상의 힌트는 없습니다."); }
+            nums[i].classList.remove("selected");
+        }
     }
-
 
     init();
 })();
