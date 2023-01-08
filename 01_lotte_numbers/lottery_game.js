@@ -2,8 +2,8 @@
     "use strict"
     
     let lotte = [];        // 당첨 번호
+    let bonusNum = 0;      // 보너스 번호
     let selectNum = [];    // 사용자가 선택한 숫자
-    let bonusNum = 0;
 
     // 뽑기 pool에 담길 숫자
     const items = [];
