@@ -3,12 +3,12 @@
     
     let lotte = [];        // 당첨 번호
     let bonusNum = 0;      // 보너스 번호
-    let selectNum = [];    // 사용자가 선택한 숫자
+    let selectedNums = [];    // 사용자가 선택한 숫자
 
     // 뽑기 pool에 담길 숫자
     const items = [];
     for(let i=1; i<46; i++)
-    items.push(i);
+        items.push(i);
     
     // user-input buttons만들기
     const userNum = document.querySelector(".user-num");
@@ -24,7 +24,7 @@
     // 로또 번호 생성
     let pools = [];      // 슬롯머신 숫자묶음 7개 생성
     let cnt = 0;
-    for(let i=0; i<8; i++)
+    for(let i=0; i<7; i++)
     {
         let pool = ["?"];      // 시작 시 화면에 나타나는 값
         const arr = [];
@@ -66,19 +66,19 @@
             if(nums[i].className == "num")
             {
                 nums[i].classList.add("selected");
-                selectNum.push(parseInt(nums[i].value));
-                console.log(selectNum);
+                selectedNums.push(parseInt(nums[i].value));
+                console.log(selectedNums);
             } else if (nums[i].className == "num selected")
             {
                 nums[i].classList.remove("selected");
-                for(let j=0; j<selectNum.length; j++)
+                for(let j=0; j<selectedNums.length; j++)
                 {
-                    if(selectNum[j] == parseInt(nums[i].value))
+                    if(selectedNums[j] == parseInt(nums[i].value))
                     {
-                        selectNum.splice(j, 1);
+                        selectedNums.splice(j, 1);
                     }
                 }
-                console.log(selectNum);
+                console.log(selectedNums);
             }
         });
     }
@@ -91,13 +91,13 @@
 
     async function spin() {
         cnt = 0;   //pools 내의 pool 순차적 처리용
-        if(selectNum.length < 6) // 이용자 선택 숫자 개수 확인
+        if(selectedNums.length < 6) // 이용자 선택 숫자 개수 확인
         {
-            alert(`숫자 ${selectNum.length}개를 선택했습니다. \n숫자 6개를 선택하세요.`); 
+            alert(`숫자 ${selectedNums.length}개를 선택했습니다. \n숫자 6개를 선택하세요.`); 
             return;
-        } else if (selectNum.length > 6)
+        } else if (selectedNums.length > 6)
         {
-            alert(`숫자 ${selectNum.length}개를 선택했습니다. \n숫자 6개를 선택하세요.`); 
+            alert(`숫자 ${selectedNums.length}개를 선택했습니다. \n숫자 6개를 선택하세요.`); 
             return;
         }
 
@@ -184,34 +184,30 @@
         return arr;
     }
 
-    function check()      // 당첨 확인
+function check()      // 당첨 확인
+{
+    console.log(lotte, selectedNums);
+    let wins = 0;     // 맞춘 개수
+    for ( let i=0; i<selectedNums.length; i++ ) 
     {
-        let wins = 0;
-        let bonus = false;
-        console.log(lotte, selectNum);
-        for ( let i=0; i<selectNum.length; i++ ) 
-        {
-            // console.log(selectNum[i].value, typeof(selectNum[i].value))
-            if( lotte.includes( selectNum[i] ) )
-                wins += 1;
-            if( bonusNum == selectNum[i] )
-                bonus = true;
-        }
-        console.log("맞춘 개수 =", wins);
-        if (wins == 6) {
-            alert("1등");
-        } else if(wins == 5 && bonus) {
-            alert("2등");
-        } else if (wins == 5) {
-            alert("3등");
-        } else if (wins == 4) {
-            alert("4등");
-        } else if ( wins == 3) {
-            alert("3등");
-        } else {
-            alert("꽝")
-        }
+        if( lotte.includes( selectedNums[i] ) )
+            wins += 1;
     }
+    console.log("맞춘 개수 =", wins);
+    if (wins == 6) {
+        alert("1등");
+    } else if(wins == 5 && (selectedNums.includes(bonusNum))) {
+        alert("2등");
+    } else if (wins == 5) {
+        alert("3등");
+    } else if (wins == 4) {
+        alert("4등");
+    } else if ( wins == 3) {
+        alert("3등");
+    } else {
+        alert("꽝")
+    }
+}
 
     function reset()   // 다시 시작
     {
