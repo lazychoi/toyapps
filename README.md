@@ -11,7 +11,7 @@
 
 ## 수식 계산기 - 괄호 포함한 사칙연산
 
-<image src="image/2023-01-15-10-27-46.png" width="400px"></image>
+<image src="images/2023-01-15-10-27-46.png" width="400px"></image>
 
 - 만든 기간: 2023.01.09 - 01.13
 - [직접 사용해 보기](https://lazychoi.github.io/toyapps/02_calculator/calc.html)
