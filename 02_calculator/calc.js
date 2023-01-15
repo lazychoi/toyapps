@@ -4,6 +4,7 @@
 
 const btnUser = document.getElementById('user');
 const btnCalc = document.getElementById('calc');
+const showPost = document.getElementById('post');
 const showResult = document.getElementById('result');
 
 btnCalc.addEventListener('click', calc);  
@@ -22,11 +23,11 @@ function calc()
         ["/", 2],
     ]);
     
-    // user = user.replace(/\s/g, "")  // 모든(g) 공백(\s) 삭제(스페이스, 탭, 줄바꿈 등)
+    
     user = user.replace(/[^0-9\+\-\*\/\(\)]/g, "");  // 숫자, 사칙연산기호, 괄호 이외의 모든 문자 삭제
 
     // 사용자가 입력한 수식의 괄호가 잘못되었는지 검사 코드 추가
-    // user_arr = user.match(/[0-9\+\-\*\/\(\)]/g) || []; // 두 자릿수 숫자가 각각 저장되는 문제
+    
 
     console.log( '사용자 입력 수식 -> ', user );
     for (let i=0; i<=user.length; i++)
@@ -105,5 +106,7 @@ function calc()
     let result = stack.pop()
     // console.log('수식 계산값 = ', stack.pop());
 
-showResult.innerText = result;
+
+post.value = exp.join('');
+showResult.value = result;
 }

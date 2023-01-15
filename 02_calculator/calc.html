@@ -1,15 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>수식 계산기</title>
+    <link rel="stylesheet" href="calc.css">
 </head>
 <body>
-    <input type="text" id="user">
-    <button id="calc">계산</button>
-    <div id="result"></div>
+    <div class="container">
+        <h1>사칙연산 수식 계산기</h1>
+        <p>+, -, *, /, 괄호만 입력할 수 있습니다.</p>
+        <label for="user">중위표현식</label>
+        <input type="text" id="user" name="user"><button id="calc">계산</button><br>
+        <label for="post">후위표현식</label>
+        <input id="post" name="post"><br>
+        <label for="result">계산 결과</label>
+        <input id="result" name="result">
+    </div>
     <script src="calc.js"></script>
 </body>
 </html>
