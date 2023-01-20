@@ -1,261 +1,300 @@
-'use strict';
+const canvas = document.getElementById('game');
+const context = canvas.getContext('2d');
+const grid = 32;            // 320px/10열 = 32, 640px/20행 = 32 => 한 셀의 크기 32x32
+const tetrominoSequence = [];
 
 /**
- * 기본 설정값 변수에 할당
- * 1. 게임 보드 행, 열, 셀 크기
- * 2. 색상
- * 3. 블록 모양
- * 4. 키보드 입력값
- */
+ * how to draw each tetromino
+ * @see https://tetris.fandom.com/wiki/SRS
+ * keep track of what is in every cell of the game using a 2d array 
+ * 게임판의 모든 셀에 무엇이 있는지 추적
+ * tetris playfield is 10x20, with a few rows offscreen
+ */ 
+const playfield = [];
+// populate the empty state
+for (let row = -2; row < 20; row++) {       // 22 행???  
+    playfield[row] = [];
 
-// 게임 보드 크기 설정
-const COLS = 10;
-const ROWS = 20;
-const BLOCK_SIZE = 30;
+    for (let col = 0; col < 10; col++) {
+        playfield[row][col] = 0;
+    }
+}
 
-const COLORS = [ 'none', 'cyan', 'blue', 'orange', 'yellow', 'green', 'purple', 'red' ];
-const SHAPES = [
-    [],                 // WHY?? 빈 것은 왜 필요할까?
-    [[0, 0, 0, 0],      // I
-     [1, 1, 1, 1],
-     [0, 0, 0, 0],
-     [0, 0, 0, 0]],
-    [[2, 0, 0],         // J
-     [2, 2, 2],
-     [0, 0, 0]],
-    [[0, 0, 3],         // L
-     [3, 3, 3],
-     [0, 0, 0]],
-    [[4, 4],            // ㅁ
-     [4, 4]],
-    [[0, 5, 5],         // S
-     [5, 5, 0],
-     [0, 0, 0]],
-    [[0, 6, 0],         // ㅗ
-     [6, 6, 6],
-     [0, 0, 0]],
-    [[7, 7, 0],         // ㄹ
-     [0, 7, 7],
-     [0, 0, 0]]
-];
-
-const KEY = {   // 키보드 Enum 
-    ESC: 27,
-    SPACE: 32,
-    LEFT: 37,
-    UP: 38,
-    RIGHT: 39,
-    DOWN: 40,
-    P: 80,
-    Q: 81
+const tetrominos = {
+    'I': [
+        [0,0,0,0],
+        [1,1,1,1],
+        [0,0,0,0],
+        [0,0,0,0]
+    ],
+    'J': [
+        [1,0,0],
+        [1,1,1],
+        [0,0,0],
+    ],
+    'L': [
+        [0,0,1],
+        [1,1,1],
+        [0,0,0],
+    ],
+    'O': [
+        [1,1],
+        [1,1],
+    ],
+    'S': [
+        [0,1,1],
+        [1,1,0],
+        [0,0,0],
+    ],
+    'Z': [
+        [1,1,0],
+        [0,1,1],
+        [0,0,0],
+    ],
+    'T': [
+        [0,1,0],
+        [1,1,1],
+        [0,0,0],
+    ]
 };
 
-const ROTATION = {
-    LEFT: 'left',
-    RIGHT: 'right'
+// color of each tetromino
+const colors = {
+    'I': 'cyan',
+    'O': 'yellow',
+    'T': 'purple',
+    'S': 'green',
+    'Z': 'red',
+    'J': 'blue',
+    'L': 'orange'
 };
 
-[COLORS, SHAPES, KEY, ROTATION].forEach(item => Object.freeze(item)); //변경 불가능하게 설정
+let count = 0;
+let tetromino = getNextTetromino();
+let rAF = null;  // keep track of the animation frame so we can cancel it 애니메이션을 취소할 수 있도록 추적하는 변수
+let gameOver = false;
 
-
-/**
- * 보드 클래스
- * 1. 생성자 메서드: 2개의 2d context를 매개변수로 받음(메인보드, next 보드)
- * 2. 보드판 크기 설정 <- init()
- * 3. 초기화 메서드 <- reset()
- * 3.1. 보드판 비우기 메서드 = 값을 0으로 할당 <- getEmptyGrid()
- * 3.2. 블록 객체 생성
- * 3.3. 블록이 처음 놓일 위치 설정 <- 블록 클래스 setStartingPosition()
- * 3.4. NextCanvas에서 블록 객체 가져오기 <- getNewPiece() 
- * 3.5. NextCanvas 블록 지우기 <- clearRect()
- * 3.6. 보드판에 블록 그리기  -> 블록 클래스 draw() 메서드
- * 3.7. 보드판 그리기 <- 블록 클래스 draw(), draw()
- * 4. 블록 회전 <- rotate()
- * 4.1. 
- *  */ 
-// 빈 셀 = 0, 색상=[1-7]
-class Board {
-
-    constructor(cts, ctxNext){
-        this.ctx = ctx;
-        this.ctxNext = ctxNext;
-        this.init()
+// min, max 범위 내에서 랜덤 정수 추출
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+  
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+  
+  // 블록 순서 정하기
+  function generateSequence() {
+    const sequence = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
+  
+    while (sequence.length) {
+      const rand = getRandomInt(0, sequence.length - 1);
+      const name = sequence.splice(rand, 1)[0];       // splice는 배열 반환
+      tetrominoSequence.push(name);
     }
-
-    // 보드판 크기 설정
-    init(){
-        this.ctx.canvas.width = COLS * BLOCK_SIZE;   // 10*30=300px
-        this.ctx.canvas.height = ROWS * BLOCK_SIZE;  // 20*30=600px
-        this.ctx.scale(BLOCK_SIZE, BLOCK_SIZE);      // 그리는 기본 셀 크기를 30px로 설정
+  }
+  
+  // 다음 순서 블록 가져오기
+  function getNextTetromino() {
+    if (tetrominoSequence.length === 0) {
+      generateSequence();
     }
-    // Reset the Board when starting a new game
-    reset() {
-        this.grid = this.getEmptyGrid();     // 각 셀을 0으로 채움
-        this.piece = new Piece(this.ctx);    // 블록 객체 생성
-        this.piece.setStartingPosition();    // 블록이 처음에 놓일 보드의 x축 좌표 ㅁ-> 4, 나머지 -> 3
-        this.getNewPiece();
-    }
-
-    getEmptyGrid() {     // 각 셀을 0으로 채움
-        return Array.from (      // Array.from(arrayLike, mappingFuction)
-            {length: ROWS}, () => Array(COLS).fill(0)
-        );
-    }
-
-    getNewPiece() {
-        const { width, height } = this.ctxNext.canvas;  // next canvas 크기 가져오기
-        this.next = new Piece(this.ctxNext);            // next 블록 객체 생성
-        this.ctxNext.clearRect(0, 0, width, height);    // next canvas 지우기
-        this.next.draw();       // next 보드에 있던 블록을 보드에 그리기
-    }
-
-    draw(){
-        this.piece.draw();  // piece 메서드
-        this.drawBoard();
-    }
-
-    drawBoard(){
-        this.grid.forEach( (row, y) => {
-            row.forEach( (value, y) => {
-                if (value > 0) {
-                    this.ctx.fillStyle = COLORS[value];  // value에 해당하는 색상 선택
-                    this.ctx.fillRect(x, y, 1, 1);       // 사각형 그리기. scale에 지정한 블록 크기만큼
-                }
-            });
-        });
-    }
-
-    rotate(piece, direction) {
-        // clone with JSON for immutability ????
-        let p = JSON.parse(JSON.stringify(piece));
-
-        // transpose matrix
-        for (let y=0; y<p.shape.length; ++y){
-            [p.shape[x][y], p.shape[y][x]] = [p.shape[y][x], p.shape[x][y]];
+  
+    const name = tetrominoSequence.pop();
+    const matrix = tetrominos[name];  // 블록 배열값 저장
+  
+    // I, O는 중앙에서, 나머지는 왼쪽 중앙에서 시작
+    const col = playfield[0].length / 2 - Math.ceil(matrix[0].length / 2);
+  
+    // I 시작위치 -> row 21(-1), 나머지 -> row 22(-2) I는 4x4이기 때문에
+    const row = name === 'I' ? -1 : -2;
+  
+    return {
+      name: name,      // name of the piece (L, O, etc.)
+      matrix: matrix,  // the current rotation matrix
+      row: row,        // current row (starts offscreen)
+      col: col         // current col
+    };
+  }
+  
+  // rotate an NxN matrix 90deg
+  // @see https://codereview.stackexchange.com/a/186834
+  function rotate(matrix) {
+    const N = matrix.length - 1;
+    const result = matrix.map((row, i) =>
+      row.map((val, j) => matrix[N - j][i])
+    );
+  
+    return result;
+  }
+  
+  // 이동하려는 matrix/row/col이 유효한지 확인
+  function isValidMove(matrix, cellRow, cellCol) {
+    for (let row = 0; row < matrix.length; row++) {
+      for (let col = 0; col < matrix[row].length; col++) {
+        if (matrix[row][col] && (
+            // outside the game bounds
+            cellCol + col < 0 ||                  // cellcol : 이동하려는 x 좌표
+            cellCol + col >= playfield[0].length ||
+            cellRow + row >= playfield.length ||
+            // collides with another piece
+            playfield[cellRow + row][cellCol + col])
+          ) {
+          return false;
         }
-
-        // reverse the order of the column ????
-        if (direction === ROTATION.RIGHT){
-            p.shape.forEach( (row) => row.reverse());
-        } else if (direction = ROTATION.LEFT) {
-            p.shape.reverse();
+      }
+    }
+  
+    return true;
+  }
+  
+  // place the tetromino on the playfield   블록을 게이판에 놓기
+  function placeTetromino() {
+    for (let row = 0; row < tetromino.matrix.length; row++) {
+      for (let col = 0; col < tetromino.matrix[row].length; col++) {
+        if (tetromino.matrix[row][col]) {
+  
+          // game over if piece has any part offscreen 게임판밖으로 벗어나면 게임 종료
+          if (tetromino.row + row < 0) {
+            return showGameOver();
+          }
+  
+          playfield[tetromino.row + row][tetromino.col + col] = tetromino.name;
         }
-
-        return p;
+      }
     }
-}
-
-
-/**
- * 블록 클래스
- * 1. 생성자
- * 2. 블록 무작위 생성 <- randomizeTetrominoType()
- * 2.1. 색상 번호 무작위 선택
- * 2.2. 색상 번호로 블록 모양 결정
- * 2.3. x, y 위치 0으로 초기화
- * 3. 블록 보드에 그리기 <- draw()
- * 4. 블록 이동 <- move()
- * 5. 시작 위치 설정 <- setStartingPosition()
- */
-class Piece {
-    constructor(ctx){
-        this.ctx = ctx;
-        this.spawn();
+  
+    // check for line clears starting from the bottom and working our way up 게임판 맨 아래행부터 모든 셀이 다 채워졌는지 검사
+    for (let row = playfield.length - 1; row >= 0; ) {
+      if (playfield[row].every(cell => !!cell)) {     //행의 모든 셀이 다 채워졌으면?? cell => cell 이게 뭐지??
+  
+        // drop every row above this one
+        for (let r = row; r >= 0; r--) {              // 바로 위의 행으로 바꾸기
+          for (let c = 0; c < playfield[r].length; c++) {
+            playfield[r][c] = playfield[r-1][c];
+          }
+        }
+      }
+      else {
+        row--;
+      }
     }
+  
+    tetromino = getNextTetromino();
+  }
+  
+  // show the game over screen
+  function showGameOver() {
+    cancelAnimationFrame(rAF);
+    gameOver = true;
+  
+    context.fillStyle = 'black';
+    context.globalAlpha = 0.75;       // 투명도
+    context.fillRect(0, canvas.height / 2 - 30, canvas.width, 60);       // GAME OVER 글자 배경색
+  
+    context.globalAlpha = 1;
+    context.fillStyle = 'white';
+    context.font = '36px monospace';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
+  }
+  
+ 
+  
+ 
+  
+  
 
-    spawn() {
-        this.typeID = this.randomizeTetrominoType(COLORS.length); // 원 코드에서는 COLORS.length - 1
-        this.shape = SHAPES[this.typeID];
-        this.color = COLORS[this.typeID];
-        this.x = 0;
-        this.y = 0;
+
+  
+
+  
+  // game loop
+  function loop() {
+    rAF = requestAnimationFrame(loop);
+    context.clearRect(0,0,canvas.width,canvas.height);    // 320 x 640 <- html에서 설정함
+      
+    // draw the playfield
+    for (let row = 0; row < 20; row++) {
+      for (let col = 0; col < 10; col++) {
+        if (playfield[row][col]) {
+          const name = playfield[row][col];  // 게임판의 블록 위치에 블록 이름 부여
+          // console.log('게임판의 블록', name)
+          context.fillStyle = colors[name];
+  
+          // drawing 1 px smaller than the grid creates a grid effect 한 셀의 크기=grid -> col(x), row(y) * grid -> 시작좌표 // -1은 테두리가 생기도록 하기 위해
+          context.fillRect(col * grid, row * grid, grid-1, grid-1);
+        }
+      }
     }
-
-    draw(){
-        this.ctx.fillStyle = this.color;   // 색상 설정
-        this.shape.forEach((row, y) => {   // 블록의 행값과 y 위치를 매개변수로 받는다
-            row.forEach( (value, x) => {   // 블록의 값과 x 위치를 매개변수로 받는다
-                //this.x, this.y -> 도형의 좌상단 위치
-                // x, y -> 도형이 놓일 위치
-                // this.x + x -> 보드에서 블록의 위치
-                if (value > 0) {      // value가 0보다 큰 곳만 색상을 칠함
-                    this.ctx.fillRect( this.x + x, this.y + y, 1, 1 );   // fillRect(x, y, width, height)
-                }
-            });
-        });
+  
+    // draw the active tetromino
+    if (tetromino) {
+  
+      // tetromino falls every 35 frames 35 <- 세로 32셀 + 블록자체셀 3 ???
+      if (++count > 35) {     // count를 왜 미리 더하지??
+        tetromino.row++;
+        count = 0;
+  
+        // place piece if it runs into anything   이동하려는 위치가 유효하지 않으면 멈춤
+        if (!isValidMove(tetromino.matrix, tetromino.row, tetromino.col)) {
+          tetromino.row--;        // 왜 빼지?
+          placeTetromino();
+        }
+      }
+  
+      context.fillStyle = colors[tetromino.name];
+  
+      for (let row = 0; row < tetromino.matrix.length; row++) {
+        for (let col = 0; col < tetromino.matrix[row].length; col++) {
+          if (tetromino.matrix[row][col]) {
+  
+            // drawing 1 px smaller than the grid creates a grid effect // tetromino.col: 초기 블록 모양에서 왼쪽벽으로 가면 0, 오른쪽벽은 7. 회전하면 값이 바뀜
+            context.fillRect((tetromino.col + col) * grid, (tetromino.row + row) * grid, grid-1, grid-1); 
+              // console.log(tetromino.col)
+          }
+        }
+      }
     }
-
-    randomizeTetrominoType(noOfTypes){
-        return Math.floor(Math.random() * noOfTypes) // 원 코드 noOfTypes + 1
+  }
+  
+  // listen to keyboard events to move the active tetromino active 블록을 움직이기 위해 키 입력 처리
+  document.addEventListener('keydown', function(e) {
+    if (gameOver) return;
+  
+    // left and right arrow keys (move)
+    if (e.key == 'ArrowLeft' || e.key == 'ArrowRight') {
+      const col = e.key === 'ArrowLeft'
+        ? tetromino.col - 1
+        : tetromino.col + 1;
+  
+      if (isValidMove(tetromino.matrix, tetromino.row, col)) {
+        tetromino.col = col;
+      }
     }
-
-    setStartingPosition() {    // 사각형만 x 좌표 4, 나머지는 3
-        this.x = this.tyhpeId === 4 ? 4 : 3;
+  
+    // up arrow key (rotate)
+    if (e.key == 'ArrowUp') {
+      const matrix = rotate(tetromino.matrix);
+      if (isValidMove(matrix, tetromino.row, tetromino.col)) {
+        tetromino.matrix = matrix;
+      }
     }
-
-    move(p) {
-        this.x = p.x;
-        this.y = p.y;
-        this.shape = p.shape;
+  
+    // down arrow key (drop)
+    if(e.key = 'ArrowDown') {
+      const row = tetromino.row + 1;
+  
+      if (!isValidMove(tetromino.matrix, row, tetromino.col)) {
+        tetromino.row = row - 1;      // 왜 1을 빼지???
+  
+        placeTetromino();
+        return;
+      }
+  
+      tetromino.row = row;
     }
-}
-
-/**
- * 메인 게임
- * 1. DOM 가져오기: 메인보드, next보드 -> 2d context 
- * 2. 게임 점수 초기화
- * 3. 블록을 키보드로 움직이는 객체 <- moves : Computed Property Name을 사용하면 key에 변수를 넣을 수 있다. 요렇게 [변수]
- * 4. 보드 객체 생성 -> 메인보드, next 보드
- * 5. next 보드 크기 설정 <- initNext()
- * 
- */
-
-const canvas = document.getElementById('board');
-const ctx = canvas.getContext('2d');
-const canvasNext = document.getElementById('next');
-const ctxNext = canvas.getContext('2d');
-
-const moves = {         //  computed property keys
-    [KEY.LEFT]: (p) => ( { ...p, x: p.x - 1 } ),
-    [KEY.RIGHT]: (p) => ( { ...p, x: p.x + 1 } ),
-    [KEY.DOWN]: (p) => ( { ...p, x: p.y + 1 } ),
-    [KEY.SPACE]: (p) => ( { ...p, x: p.y + 1 } ),
-    [KEY.UP]: (p) => board.rotate(p, ROTATION.RIGHT),
-    [KEY.Q]: (p) => board.rotate(p, ROTATION.LEFT)
-}
-
-// next 캔버스 크기 설정
-ctxNext.canvas.width = 4 * BLOCK_SIZE;
-ctxNext.canvas.height = 4 * BLOCK_SIZE;
-ctxNext.scale(BLOCK_SIZE, BLOCK_SIZE);
-
-// function addEventListener() {
-//     document.removeEventListener('keydown', handleKeyPress);  // 기존 블록을 지우기 위해선가???
-//     document.addEventListener('keydown', handleKeyPress);
-// }
-let board = new Board();
-
-function handleKeyPress(e) {
-    let p = moves[e.keyCode](board.piece);
-    if (board.valid(p)){
-        board.piece.move(p);
-    }
-}
-
-function play(){
-    // addEventListener();
-    document.removeEventListener('keydown', handleKeyPress);  // 기존 블록을 지우기 위해선가???
-    document.addEventListener('keydown', handleKeyPress);
-
-    board.reset();
-    animate();
-    
-}
-
-function animate(){
-    // clear board before drawing new state
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    board.draw();   // 보드 그리기
-    requestAnimationFrame(animate);
-}
-
+  });
+  
+  // start the game
+  rAF = requestAnimationFrame(loop);

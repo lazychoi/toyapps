@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { text-align: center; font-family: sans-serif; }
+        canvas { background-color: black; }
+    </style>
+</head>
+<body>
+    <canvas id="asteroids1" width="400" height="400"></canvas>
+    <canvas id="asteroids2" width="400" height="400"></canvas>
+    <script src="drawing.js"></script>
+    <script>
+        const canvas1 = document.getElementById('asteroids1');
+        const ctx1 = canvas1.getContext('2d');
+        const canvas2 = document.getElementById('asteroids2');
+        const ctx2 = canvas2.getContext('2d');
+        
+        draw_grid(ctx1);    // 왼쪽 캔버스
+
+        ctx1.beginPath();
+        ctx1.strokeStyle = '#FFFFFF';
+        ctx1.fillStyle = '#00FF00';
+        ctx1.lineWidth = 2;
+        ctx1.moveTo(50, 50);
+        ctx1.lineTo(150, 250);
+        ctx1.lineTo(250, 170);
+        ctx1.lineTo(320, 280);
+        ctx1.closePath();
+        ctx1.stroke();
+        ctx1.fillText('(50, 50)', 30, 40);
+        ctx1.fillText('(150, 250)', 130, 260);
+        ctx1.fillText('(250, 170)', 255, 175);
+        ctx1.fillText('(320, 280)', 325, 280);
+
+        ctx1.beginPath();
+        ctx1.moveTo(50, 250);   // 왼쪽 아래 삼각형
+        ctx1.lineTo(50, 350);
+        ctx1.lineTo(150, 350);
+        ctx1.closePath();        // 가장 가까운 열린 점을 찾아 이음
+        
+        ctx1.moveTo(230, 360);   // 우측 하단 작은 삼각형
+        ctx1.lineTo(270, 360);
+        ctx1.lineTo(270, 310);
+        ctx1.closePath();
+        
+        ctx1.moveTo(250, 50);    // 우상단 삼각형
+        ctx1.lineTo(370, 50);
+        ctx1.lineTo(370, 100);
+        ctx1.closePath();
+
+        ctx1.strokeStyle = '#FFFF00';
+        ctx1.fillStyle = '#4c562b';
+        ctx1.fill();
+        ctx1.stroke();
+
+        draw_grid(ctx2);    // 오른쪽 캔버스
+
+        ctx2.beginPath();
+        ctx2.strokeStyle = '#FFFFFF';
+        ctx2.fillStyle = '#00FF00';
+        ctx2.lineWidth = 2;
+        ctx2.moveTo(50, 50);
+        ctx2.lineTo(150, 250);
+        ctx2.lineTo(250, 170);
+        ctx2.lineTo(320, 280);
+        ctx2.closePath();
+        ctx2.stroke();
+        ctx2.fillText('(50, 50)', 30, 40);
+        ctx2.fillText('(150, 250)', 130, 260);
+        ctx2.fillText('(250, 170)', 255, 175);
+        ctx2.fillText('(320, 280)', 325, 280);
+        ctx2.fill();
+
+        ctx2.beginPath();
+        ctx2.moveTo(50, 250);   // 왼쪽 아래 삼각형
+        ctx2.lineTo(50, 350);
+        ctx2.lineTo(150, 350);
+        ctx2.closePath();        // 가장 가까운 열린 점을 찾아 이음
+        
+        ctx2.moveTo(230, 360);   // 우측 하단 작은 삼각형
+        ctx2.lineTo(270, 360);
+        ctx2.lineTo(270, 310);
+        ctx2.closePath();
+        
+        ctx2.moveTo(250, 50);    // 우상단 삼각형
+        ctx2.lineTo(370, 50);
+        ctx2.lineTo(370, 100);
+        ctx2.closePath();
+
+        ctx2.strokeStyle = '#FFFF00';
+        ctx2.fillStyle = '#4c562b';
+        ctx2.stroke();
+        ctx2.fill();
+    </script>
+</body>
+</html>

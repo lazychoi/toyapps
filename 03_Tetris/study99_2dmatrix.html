@@ -10,20 +10,25 @@
     </style>
 </head>
 <body>
-    <canvas id="board" class="game-board"></canvas>
+    <canvas id="small-board" class="game-board"></canvas>
+    <!-- <canvas id="board" class="game-board"></canvas> -->
     <script>
         // 게임 보드 크기 설정
-        const COLS = 10;
-        const ROWS = 20;
+        const COLS = 1;
+        const ROWS = 2;
         const BLOCK_SIZE = 30;
 
+        const smallCanvas = document.getElementById('small-board');
+        const smallCtx = canvas.getContext('2d');
         const canvas = document.getElementById('board');
         const ctx = canvas.getContext('2d');
 
         // 캔버스 크기, 블록 크기 설정
-        ctx.canvas.width = COLS * BLOCK_SIZE;  // 10*30
-        ctx.canvas.height = ROWS * BLOCK_SIZE; // 20*30
-        ctx.scale(BLOCK_SIZE, BLOCK_SIZE);     // 캔퍼스의 1 unit = 1px => 30px, 30px
+        smallctx.canvas.width = COLS;
+        smallctx.canvas.height = ROWS;
+        //ctx.canvas.width = COLS * BLOCK_SIZE;  // 10*30
+        //ctx.canvas.height = ROWS * BLOCK_SIZE; // 20*30
+        //ctx.scale(BLOCK_SIZE, BLOCK_SIZE);     // 캔퍼스의 1 unit = 1px => 30px, 30px
     </script>
 </body>
 </html>

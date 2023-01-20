@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { text-align: center; font-family: sans-serif; }
+        canvas { background-color: black; }
+    </style>
+</head>
+<body>
+    <canvas id="asteroids" width="400" height="400"></canvas>
+    <script>
+        const canvas = document.getElementById('asteroids');
+        const ctx = canvas.getContext('2d');
+
+        // 격자 그리기 - 매 5번째 격자 진하게
+        ctx.strokeStyle = '#00FF00';
+        for(let x=0; x<canvas.width; x+=10){
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.lineWidth = (x % 50 == 0) ? 0.5 : 0.25  // 격자 1개는 10px 간격 -> 5개 50px
+            ctx.stroke();
+            ctx.fillStyle = '#009900';
+            if(x % 50 == 0) { ctx.fillText(x, x, 10);}  //한 칸이 10px이어서 y좌표를 10으로 설정. 20으로 바꾸면 두 번째 줄에 나타남
+        }
+        for(let y=0; y<canvas.height; y+=10){
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.height, y);
+            ctx.lineWidth = (y % 50 == 0) ? 0.5 : 0.24;
+            ctx.stroke();
+            ctx.fillStyle = '#009900';
+            if(y % 50 == 0) { ctx.fillText(y, 3, y + 10);} // 왼쪽 여백을 3으로 주어 숫자가 좀 더 잘 보이도록 함
+        }
+    </script>
+</body>
+</html>

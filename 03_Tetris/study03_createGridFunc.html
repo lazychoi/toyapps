@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { text-align: center; font-family: sans-serif; }
+        canvas { background-color: black; }
+    </style>
+</head>
+<body>
+    <canvas id="asteroids" width="400" height="400"></canvas>
+    <script src="drawing.js"></script>
+    <script>
+        const canvas = document.getElementById('asteroids');
+        const ctx = canvas.getContext('2d');
+        //draw_grid(context, 기본_격자_간격, 굵은_격자_간격, 선_색, 글자_색)
+        draw_grid(ctx, 5, 30, 'red', 'yellow')
+    </script>
+</body>
+</html>

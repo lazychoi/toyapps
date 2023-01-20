@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { text-align: center; font-family: sans-serif; }
+        canvas { background-color: black; }
+    </style>
+</head>
+<body>
+    <canvas id="asteroids1" width="400" height="400"></canvas>
+    <script src="drawing.js"></script>
+    <script>
+        const canvas1 = document.getElementById('asteroids1');
+        const ctx = canvas1.getContext('2d');
+        draw_grid(ctx);
+
+        ctx.beginPath();                // 가운데
+        ctx.strokeStyle = '#00FFFF';
+        ctx.fillStyle = '#00FF00';
+        ctx.lineWidth = 2;
+        ctx.moveTo(50, 50);
+        ctx.bezierCurveTo(0, 0, 80, 250, 150, 250);
+        ctx.bezierCurveTo(250, 250, 250, 250, 150, 170);
+        ctx.bezierCurveTo(250, 50, 400, 350, 320, 280);
+        ctx.closePath();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(50, 250);   // 왼쪽 아래
+        ctx.quadraticCurveTo(25, 300, 50, 350);
+        ctx.quadraticCurveTo(100, 375, 150, 350);
+        ctx.closePath();        // 가장 가까운 열린 점을 찾아 이음
+        
+        ctx.moveTo(230, 360);   // 우측 하단
+        ctx.quadraticCurveTo(255, 340, 270, 360);
+        ctx.quadraticCurveTo(255, 340, 270, 310);
+        ctx.closePath();
+        
+        ctx.moveTo(250, 50);    // 우상단
+        ctx.quadraticCurveTo(310, 60, 370, 50);
+        ctx.quadraticCurveTo(400, 75, 370, 100);
+        ctx.closePath();
+
+        ctx.strokeStyle = '#FFFF00';
+        ctx.fillStyle = '#A00';
+        ctx.fill();
+        ctx.stroke();
+    </script>
+</body>
+</html>
