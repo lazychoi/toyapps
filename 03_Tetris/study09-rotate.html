@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="drawing.js"></script>
+</head>
+<body>
+    <canvas id="asteroids" width="400" height="400"></canvas>
+    <script>
+        let ctx = document.getElementById('asteroids').getContext('2d');
+        draw_grid(ctx);
+        
+        let c1 = 0, c2 = 0;
+        for(c1=0.1; c1<1; c1+=0.2){
+            for(c2=0.1; c2<1; c2+=0.2){
+                ctx.save();
+                ctx.translate(ctx.canvas.width * c1, ctx.canvas.height * c2);
+                ctx.rotate(-Math.PI/2);     // 캔버스를 -0.5pi 회전(위쪽 방향)
+                draw_ship(ctx, ctx.canvas.width/12, {curve1: c1, curve2: c2, guide: true});
+                ctx.restore();
+            }
+        }
+
+        //ctx.translate(200, 200);
+        //draw_ship(ctx, 150, {curve1:Math.random(), curve2:Math.random(), guide:true});
+
+        //let x, y, angle = 0;
+        //let w = ctx.canvas.width, h = ctx.canvas.height;
+        //for(y = h/20; y<h; y+=h/10){
+        //    for(x=w/20; x<w; x+=w/10){
+        //        ctx.save();
+        //        ctx.translate(x, y);
+        //        ctx.rotate(angle);
+        //        draw_ship(ctx, w/30, {guide:true, lineWidth:1});
+        //        ctx.restore();
+        //        angle = (angle + 0.0075*Math.PI);
+        //    }
+        //}
+
+        
+        //ctx.lineWidth = 0.5;
+        //ctx.strokeStyle = 'white';
+        //let x = ctx.canvas.width * 0.9;
+        //let y = 0;
+        //let radius = ctx.canvas.width * 0.1;
+        //let t = ctx.canvas.width / 20;
+        //let r = Math.PI / 500;
+
+        //for(let i=0; i<=50; i++){
+        //    ctx.rotate(i*r);
+        //    draw_ship(ctx, t, {guide:true, lineWidth:1});
+        //    ctx.translate(t,0);
+        //}
+
+        //for(let r=0; r<=0.5*Math.PI; r+=0.05*Math.PI){
+        //    ctx.save();
+        //    ctx.rotate(r);      // rotate(angle) 캔버스가 위로 회전 -> 도형은 아래로 회전하는 것으로 보임
+        //    draw_ship(ctx, x, y, radius, {guide:true});
+        //    ctx.beginPath();
+        //    ctx.moveTo(0, 0);
+        //    ctx.lineTo(x, 0);
+        //    ctx.stroke();
+        //    ctx.restore();
+        //}
+    </script>
+</body>
+</html>

@@ -1,5 +1,4 @@
-const canvas = document.getElementById('game');
-const context = canvas.getContext('2d');
+const ctx = document.getElementById('game').getContext('2d');
 const grid = 32;            // 320px/10열 = 32, 640px/20행 = 32 => 한 셀의 크기 32x32
 const tetrominoSequence = [];
 
@@ -95,7 +94,7 @@ function getRandomInt(min, max) {
   
   // 다음 순서 블록 가져오기
   function getNextTetromino() {
-    if (tetrominoSequence.length === 0) {
+    if (tetrominoSequence.length === 0) {   // 블록 랜덤하게 섞어 순서 만들기
       generateSequence();
     }
   
@@ -123,7 +122,6 @@ function getRandomInt(min, max) {
     const result = matrix.map((row, i) =>
       row.map((val, j) => matrix[N - j][i])
     );
-  
     return result;
   }
   
@@ -147,17 +145,16 @@ function getRandomInt(min, max) {
     return true;
   }
   
-  // place the tetromino on the playfield   블록을 게이판에 놓기
+  // place the tetromino on the playfield   비활성 블록을 게임판으로 변환
   function placeTetromino() {
     for (let row = 0; row < tetromino.matrix.length; row++) {
       for (let col = 0; col < tetromino.matrix[row].length; col++) {
         if (tetromino.matrix[row][col]) {
   
-          // game over if piece has any part offscreen 게임판밖으로 벗어나면 게임 종료
+          // 블록이 게임판 위쪽 밖으로 벗어나면 게임 종료
           if (tetromino.row + row < 0) {
             return showGameOver();
           }
-  
           playfield[tetromino.row + row][tetromino.col + col] = tetromino.name;
         }
       }
@@ -187,32 +184,22 @@ function getRandomInt(min, max) {
     cancelAnimationFrame(rAF);
     gameOver = true;
   
-    context.fillStyle = 'black';
-    context.globalAlpha = 0.75;       // 투명도
-    context.fillRect(0, canvas.height / 2 - 30, canvas.width, 60);       // GAME OVER 글자 배경색
+    ctx.fillStyle = 'black';
+    ctx.globalAlpha = 0.75;       // 투명도
+    ctx.fillRect(0, ctx.canvas.height / 2 - 30, ctx.canvas.width, 60);       // GAME OVER 글자 배경색
   
-    context.globalAlpha = 1;
-    context.fillStyle = 'white';
-    context.font = '36px monospace';
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = 'white';
+    ctx.font = '36px monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('GAME OVER!', ctx.canvas.width / 2, ctx.canvas.height / 2);
   }
-  
- 
-  
- 
-  
-  
-
-
-  
-
   
   // game loop
   function loop() {
     rAF = requestAnimationFrame(loop);
-    context.clearRect(0,0,canvas.width,canvas.height);    // 320 x 640 <- html에서 설정함
+    ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);    // 320 x 640 <- html에서 설정함
       
     // draw the playfield
     for (let row = 0; row < 20; row++) {
@@ -220,10 +207,10 @@ function getRandomInt(min, max) {
         if (playfield[row][col]) {
           const name = playfield[row][col];  // 게임판의 블록 위치에 블록 이름 부여
           // console.log('게임판의 블록', name)
-          context.fillStyle = colors[name];
+          ctx.fillStyle = colors[name];
   
           // drawing 1 px smaller than the grid creates a grid effect 한 셀의 크기=grid -> col(x), row(y) * grid -> 시작좌표 // -1은 테두리가 생기도록 하기 위해
-          context.fillRect(col * grid, row * grid, grid-1, grid-1);
+          ctx.fillRect(col * grid, row * grid, grid-1, grid-1);
         }
       }
     }
@@ -232,25 +219,25 @@ function getRandomInt(min, max) {
     if (tetromino) {
   
       // tetromino falls every 35 frames 35 <- 세로 32셀 + 블록자체셀 3 ???
-      if (++count > 35) {     // count를 왜 미리 더하지??
+      if (++count > 35) {     // 떨어지는 속도 조절
         tetromino.row++;
         count = 0;
   
         // place piece if it runs into anything   이동하려는 위치가 유효하지 않으면 멈춤
         if (!isValidMove(tetromino.matrix, tetromino.row, tetromino.col)) {
-          tetromino.row--;        // 왜 빼지?
+          tetromino.row--;
           placeTetromino();
         }
       }
   
-      context.fillStyle = colors[tetromino.name];
+      ctx.fillStyle = colors[tetromino.name];
   
       for (let row = 0; row < tetromino.matrix.length; row++) {
         for (let col = 0; col < tetromino.matrix[row].length; col++) {
           if (tetromino.matrix[row][col]) {
   
             // drawing 1 px smaller than the grid creates a grid effect // tetromino.col: 초기 블록 모양에서 왼쪽벽으로 가면 0, 오른쪽벽은 7. 회전하면 값이 바뀜
-            context.fillRect((tetromino.col + col) * grid, (tetromino.row + row) * grid, grid-1, grid-1); 
+            ctx.fillRect((tetromino.col + col) * grid, (tetromino.row + row) * grid, grid-1, grid-1); 
               // console.log(tetromino.col)
           }
         }
@@ -286,7 +273,7 @@ function getRandomInt(min, max) {
       const row = tetromino.row + 1;
   
       if (!isValidMove(tetromino.matrix, row, tetromino.col)) {
-        tetromino.row = row - 1;      // 왜 1을 빼지???
+        tetromino.row = row - 1;      // 아래쪽으로 한 칸 이동한 값을 되돌리기
   
         placeTetromino();
         return;

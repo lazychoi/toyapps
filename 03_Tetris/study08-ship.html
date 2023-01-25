@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="drawing.js"></script>
+</head>
+<body>
+    <h1>우주선 그리기</h1>
+    <canvas id="asteroids" width="400" height="400"></canvas>
+    <script>
+        let ctx = document.getElementById('asteroids').getContext('2d');
+        draw_grid(ctx);
+        draw_ship(ctx, 200, 200, 125, {guide: true});
+        draw_ship(ctx, 75, 75, 50, {stroke:'gold', fill: 'purple'});
+        draw_ship(ctx, 325, 325, 50, {angle: 0.8*Math.PI, guide: true});
+        draw_ship(ctx, 75, 325, 50, {angle: 0.3*Math.PI, guide: true});
+        draw_ship(ctx, 325, 75, 50, {lineWidth: 8, fill: 'blue'});
+    </script>
+</body>
+</html>

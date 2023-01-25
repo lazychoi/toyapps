@@ -22,6 +22,6 @@
 ## 테트리스 게임
 
 - [따라한 코드 - Basic Tetris HTML and JavaScript Game](https://gist.github.com/straker/3c98304f8a6a9174efd8292800891ea1)
-- [따라한 코드 - Learning Modern JavaScript with Tetris](https://michael-karen.medium.com/learning-modern-javascript-with-tetris-92d532bcd057)
-- [따라한 코드 - 추억의 게임!테트리스 HTML, Javascript로 만들기](https://www.youtube.com/watch?v=1lNy2mhvLFk&t=2220s)
-S
+- [참고한 코드 - Learning Modern JavaScript with Tetris](https://michael-karen.medium.com/learning-modern-javascript-with-tetris-92d532bcd057)
+- [참고한 코드 - 추억의 게임!테트리스 HTML, Javascript로 만들기](https://www.youtube.com/watch?v=1lNy2mhvLFk&t=2220s)
+

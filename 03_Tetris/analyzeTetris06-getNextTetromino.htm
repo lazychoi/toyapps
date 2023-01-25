@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>테트리스</title>
+    <link rel="stylesheet" href="tetris.css">
+</head>
+<body>
+    <canvas width="320" height="640" id="game"></canvas>
+    <script>
+        const canvas = document.getElementById('game')
+        const ctx = canvas.getContext('2d');
+        const grid = 32;
+        let tetrominoSequence = []; // 블록이 나타날 순서
+        //let x = 0, y = 0;
+
+        const tetrominos = {
+            'I': [
+                [0,0,0,0],
+                [1,1,1,1],
+                [0,0,0,0],
+                [0,0,0,0]
+            ],
+            'J': [
+                [1,0,0],
+                [1,1,1],
+                [0,0,0],
+            ],
+            'L': [
+                [0,0,1],
+                [1,1,1],
+                [0,0,0],
+            ],
+            'O': [
+                [1,1],
+                [1,1],
+            ],
+            'S': [
+                [0,1,1],
+                [1,1,0],
+                [0,0,0],
+            ],
+            'Z': [
+                [1,1,0],
+                [0,1,1],
+                [0,0,0],
+            ],
+            'T': [
+                [0,1,0],
+                [1,1,1],
+                [0,0,0],
+            ]
+        };
+        
+        // color of each tetromino
+        const colors = {
+            'I': 'cyan',
+            'O': 'yellow',
+            'T': 'purple',
+            'S': 'green',
+            'Z': 'red',
+            'J': 'blue',
+            'L': 'orange'
+        };
+
+        // 다음 순서 블록 가져오기
+        function getNextTetromino() {
+            if (tetrominoSequence.length === 0) {   // 블록 랜덤하게 섞어 순서 만들기
+                const tetromioNames = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
+  
+                while (tetromioNames.length) {
+                    const rand = Math.floor(Math.random() * tetromioNames.length);
+                    const name = tetromioNames.splice(rand, 1)[0];   // splice는 배열 반환
+                    tetrominoSequence.push(name);
+                }
+            }
+            console.log(tetrominoSequence);
+            const tetrominoName = tetrominoSequence.pop();  // 마지막 블록 꺼내
+            const tetrominoArray = tetrominos[tetrominoName];  // 블록 배열값 저장
+        
+            // 블록 가로 중심을 게임판 가로 중앙에 위치
+            let x = 4; // gamefield[0].length / 2 - Math.ceil(tetrominoArray[0].length / 2);
+        
+            // I 시작위치 -> row 21(-1), 나머지 -> row 22(-2) I는 4x4이기 때문에
+            let y = name === 'I' ? -1 : -2;
+        
+            return {
+                tetrominoName: tetrominoName,       // name of the piece (L, O, etc.)
+                tetrominoArray: tetrominoArray,     // the current rotation matrix
+                x: x,                               // current x
+                y: y                                // current y (starts offscreen)
+            };
+        }
+
+        
+
+        function isValidMove(tetrominoArray, x, y) {
+            for (let row = 0; row < tetrominoArray.length; row++) {
+              for (let col = 0; col < tetrominoArray[row].length; col++) {
+                if (tetrominoArray[row][col] && ( 
+                    (col + x) < 0 ||    // 이동할 곳(col + x)이 왼쪽 벽을 지나거나
+                    (col + x) >= 10 ||  // 이동할 곳(col + x)이 오른쪽 벽을 지나거나
+                    (row + y) >= 19 ) )  //이동할 곳(row + y)이 게임판 길이(20) 이상이면
+                { 
+                    return false; 
+                }
+              }
+            }
+            return true;  // 이동할 곳이 게임판 안쪽이면 true 반환
+        }
+
+        function rotate(tetrominoArray) {
+            // 블록 회전
+            const N = tetrominoArray.length - 1;
+            const result = tetrominoArray.map((row, i) =>    // i = row index
+                row.map((val, j) => tetrominoArray[N - j][i])  // j = col index
+            );
+            return result;
+        }
+
+        let latency = 0;
+        function loop() {
+            // 애니메이션 시작
+            rAF = requestAnimationFrame(loop);
+
+            if(tetromino.y >= 18) { tetromino = getNextTetromino(); }
+            
+            // 게임판 지우기
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 떨어지는 속도 조절. 10번은 같은 위치에서 블록 그림. 11번째 세로로 한 칸 이동
+            latency++;
+            if(latency > 20 && isValidMove(tetromino.tetrominoArray, tetromino.x, tetromino.y)) { 
+                tetromino.y++; 
+                latency = 0;
+                console.log(tetromino.y);
+            }
+            
+            // isValidMove == true -> 한 칸 아래로 블록 이동
+            ctx.fillStyle = colors[tetromino.tetrominoName];
+            for (let row = 0; row < tetromino.tetrominoArray.length; row++) {
+                for (let col = 0; col < tetromino.tetrominoArray[row].length; col++) {
+                    if (tetromino.tetrominoArray[row][col]) {
+                        ctx.fillRect((col + tetromino.x) * grid, (row + tetromino.y) * grid, grid-1, grid-1); 
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            console.log(e.key);
+            // left and right arrow keys (move)
+            if (e.key == 'ArrowLeft' || e.key == 'ArrowRight') {
+              const moveX = e.key === 'ArrowLeft' ? tetromino.x - 1 : tetromino.x + 1;
+              if (isValidMove(tetromino.tetrominoArray, moveX, tetromino.y)) {
+                tetromino.x = moveX;
+              }
+            }
+          
+            // down arrow key (drop)
+            if(e.key = 'ArrowDown') {
+                const moveY = tetromino.y + 1;
+                if (!isValidMove(tetromino.tetrominoArray, tetromino.x, moveY)) {
+                    tetromino.y = moveY - 1;      // 유효한 이동위치가 아니면 증가시킨 y값 되돌리기
+                } else {
+                    tetromino.y = moveY;
+                }
+            }
+
+            // up arrow key (rotate)
+            if (e.key == 'ArrowUp') {
+                const matrix = rotate(tetromino.tetrominoArray);
+                if (isValidMove(matrix, tetromino.x, tetromino.y)) {
+                    tetromino.tetrominoArray = matrix;
+                }
+            }
+        });
+
+        let tetromino = getNextTetromino();
+        requestAnimationFrame(loop);
+
+    </script>
+</body>
+</html>

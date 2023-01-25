@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="drawing.js"></script>
+    <script src="object.js"></script>
+</head>
+<body>
+    <h1>Animation</h1>
+    <canvas id="pacman" width="300" height="300"></canvas>
+    <script>
+        let ctx = document.getElementById('pacman').getContext('2d');
+        pacman = new PacMan(150, 150, 20, 120);
+        let ghosts = [
+            new Ghost(Math.random() * 300, Math.random() * 300, 20, 70, 'red'),
+            new Ghost(Math.random() * 300, Math.random() * 300, 20, 60, 'pink'),
+            new Ghost(Math.random() * 300, Math.random() * 300, 20, 50, 'cyan'),
+            new Ghost(Math.random() * 300, Math.random() * 300, 20, 40, 'orange')
+        ]
+        function draw(ctx, guide){
+            pacman.draw(ctx);
+            ghosts.forEach(function(ghost){ ghost.draw(ctx, guide) });
+        }
+        function update(elapsed){
+            pacman.update(elapsed, 300, 300);
+            ghosts.forEach(function(ghost){ ghost.update(pacman, elapsed) });
+        }
+        let previous, elapsed;
+        function frame(timestamp){
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            if(!previous) previous = timestamp;
+            elapsed = timestamp - previous;
+            update(elapsed / 1000);
+            draw(ctx, true);
+            previous = timestamp;
+            window.requestAnimationFrame(frame);
+        }
+        window.requestAnimationFrame(frame);
+    </script>
+</body>
+</html>

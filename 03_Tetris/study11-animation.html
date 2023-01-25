@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="drawing.js"></script>
+</head>
+<body>
+    <h1>Animation</h1>
+    <canvas id="asteroids" width="400" height="400"></canvas>
+    <script>
+        let ctx = document.getElementById('asteroids').getContext('2d');
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1.5;
+        let x = 0, y = ctx.canvas.height /5, radius = 20;
+        let xspeed = 1.5, yspeed = 0, gravity = 0.1;
+        let mouth = 0;
+
+        function frame(){
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            draw(ctx);
+            update();
+        }
+        
+        function update(){
+            x += xspeed;
+            y += yspeed;
+            yspeed += gravity;
+            if(y >= ctx.canvas.height - radius){
+                y = ctx.canvas.height - radius;
+                yspeed *= -0.6;
+                xspeed *= 0.95;
+            }
+            if(x <=0 || x >= ctx.canvas.width){
+                x = (x + ctx.canvas.width) % ctx.canvas.width;
+            }
+            mouth = Math.abs(Math.sin(6 * Math.PI * x / ctx.canvas.width)); 
+        }
+
+        function draw(cts){
+            draw_grid(ctx);
+            //ctx.beginPath();
+            //ctx.arc(x, y, radius, 0, 2*Math.PI);
+            //ctx.fill();
+            //ctx.stroke();
+            ctx.save();
+            ctx.translate(x, y);
+            draw_pacman(ctx, radius, mouth);
+            ctx.restore();
+        }
+        setInterval(frame, 1000.0/60.0);
+
+    </script>
+</body>
+</html>
