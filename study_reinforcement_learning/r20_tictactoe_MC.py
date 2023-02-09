@@ -6,34 +6,33 @@ import numpy as np
 
 class Monte_Carlo_player:
     def __init__(self):
-        self.name = 'MC player'
+        self.name = "MC player"
         self.num_playout = 1000
-        
+
     def select_action(self, env, player):
         # 가능한 행동 조사하고 모든 행동의 가치를 0으로 초기화
         # -> 이전 학습을 활용하지 못함
         available_action = env.get_action()
-        V = np.zeros(len(available_action)) 
+        V = np.zeros(len(available_action))
         for i in range(len(available_action)):
             # 매번 착수하기 전에
             # 가능한 행동 내에서 연습 경기 1000번 반복하여 학습
             for j in range(self.num_playout):
-                
                 # 지금 상태를 복사해서 자체 연습 경기에 사용
                 temp_env = copy.deepcopy(env)
-                
+
                 # 자체 연습 경기의 결과는 승리 플레이어의 값으로 반환
                 # p1이 이기면 1, p2가 이기면 -1
                 self.playout(temp_env, available_action[i], player)
-                if player == temp_env.reward:   # 플레이어가 승리하면
+                if player == temp_env.reward:  # 플레이어가 승리하면
                     V[i] += 1
-        
+
         # 1000번 학습한 V(s) 출력
         for a, v in zip(available_action, V):
-            print(f'V({a}) : {v}')
+            print(f"V({a}) : {v}")
 
-        return available_action[np.argmax(V)]   # V가 가장 큰 곳에 착수
-    
+        return available_action[np.argmax(V)]  # V가 가장 큰 곳에 착수
+
     def playout(self, temp_env, action, player):
         """
         # 플레이아웃 재귀함수
@@ -49,14 +48,14 @@ class Monte_Carlo_player:
         else:
             # 플레이어 교체
             player = -player
-            
+
             # 가능한 행동 조사
             available_action = temp_env.get_action()
-            
+
             # 무작위로 행동 선택
             action = np.random.randint(len(available_action))
-            self.playout(temp_env, available_action[action], player)      
-            
+            self.playout(temp_env, available_action[action], player)
+
 
 class Environment:
     def __init__(self):
@@ -67,7 +66,7 @@ class Environment:
         """
         self.board_a = np.zeros(9)
         self.done = False
-        self.reward = 0     # 승자(1 or -1), 무승부(0)
+        self.reward = 0  # 승자(1 or -1), 무승부(0)
         # self.winner = 0
         self.print = False  # 기본은 자동모드
 
@@ -120,11 +119,12 @@ class Environment:
         # 첫 번째 열 == 두 번째 열 (0 == 1), (3 == 4), (6 == 7)
         # 두 번째 열 == 세 번째 열 (1 == 2), (4 == 5), (7 == 8)
         # 체크하는 보드칸이 비어있지 않아야 함 => 가로 일치
-        for line in end_condition:  
-            if (self.board_a[line[0]] == self.board_a[line[1]]  
-                and self.board_a[line[1]] == self.board_a[line[2]]  
-                and self.board_a[line[0]] != 0):
-                
+        for line in end_condition:
+            if (
+                self.board_a[line[0]] == self.board_a[line[1]]
+                and self.board_a[line[1]] == self.board_a[line[2]]
+                and self.board_a[line[0]] != 0
+            ):
                 # 종료 상태, 승자 저장 후 함수 종료
                 self.done = True
                 self.reward = player
@@ -133,8 +133,8 @@ class Environment:
         # 비긴 상태 : 보드에 빈 공간이 없을 때
         observation = self.get_action()
         if len(observation) == 0:
-            self.done = True    # 종료 상태
-            self.reward = 0     # 무승부
+            self.done = True  # 종료 상태
+            self.reward = 0  # 무승부
         # return
 
     def move(self, p1, p2, player):
@@ -209,7 +209,7 @@ class Random_player:
 
 # 게임 진행
 p1 = Monte_Carlo_player()
-p2 = Monte_Carlo_player()
+p2 = Human_player()
 
 # 지정된 게임 횟수를 자동으로 두게 할 것인지 한 게임씩 두게 할 것인지 설정
 # auto = True : 지정된 게임 횟수(games)를 자동으로 진행
@@ -253,7 +253,7 @@ else:
     # 한 게임씩 진행하는 수동 모드
     while True:
         env = Environment()
-        env.print = True        # 사용자가 둔 곳 출력도록 옵션 설정
+        env.print = True  # 사용자가 둔 곳 출력도록 옵션 설정
         for i in range(10000):
             reward, done = env.move(p1, p2, (-1) ** i)  # p1부터 시작((-1)**i -> 1)
 

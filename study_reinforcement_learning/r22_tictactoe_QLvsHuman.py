@@ -4,22 +4,23 @@ import numpy as np
 from tqdm import tqdm
 
 
-class Q_learning_player():
+class Q_learning_player:
     """
     1. 초기화: qtable, epsilon, gamma, learning_rate(alpha)
     2. select_action() : 정책(policy)에 맞는 행동(action) 반환
     3. policy() : 가능한 행동들에 e-greedy 반영한 확률 반환
-    4. learn_qtable() : 
+    4. learn_qtable() :
     """
+
     def __init__(self):
         self.name = "Q_player"
-        
+
         # Q-table을 딕셔너리로 정의
         self.qtable = {}
-        
+
         # 𝜀-greedy 계수 정의
         self.epsilon = 1.0
-        
+
         # 학습률 정의
         self.learning_rate = 0.1
         self.gamma = 0.9
@@ -30,8 +31,8 @@ class Q_learning_player():
         action = self.policy(env)
         if self.print:
             print("{} : select action".format(action))
-        return action 
-        
+        return action
+
     def policy(self, env):
         # 행동 가능한 상태를 저장
         available_action = env.get_action()
@@ -40,45 +41,45 @@ class Q_learning_player():
 
         # 행동 가능한 상태의 Q-value를 조사
         for i, act in enumerate(available_action):
-
             key = (tuple(env.board_a), act)
 
             # 현재 상태를 경험한 적이 없다면(딕셔너리에 없다면) 딕셔너리에 추가(Q-value = 0)
-            if self.qtable.get(key) ==  None:                
+            if self.qtable.get(key) == None:
                 self.qtable[key] = 0
             # 행동 가능한 상태의 Q-value 저장
             qvalues[i] = self.qtable.get(key)
 
         # 𝜀-greedy: 가능한 행동 중 Q-value가 가장 큰 행동 저장
         ## max Q-value가 여러 개라면 그 중에서 다시 선택
-        greedy_action = np.argmax(qvalues)                    
+        greedy_action = np.argmax(qvalues)
 
         # pr = np.zeros(len(available_action))
 
         # max Q-value와 같은 값이 여러개 있는지 확인한 후 double_check에 상태를 저장
         ## 최댓값은 1로, 나머지는 0으로 변환 np.where(조건, 참, 거짓)
-        double_check = (np.where(qvalues == np.max(qvalues),1,0))
+        double_check = np.where(qvalues == np.max(qvalues), 1, 0)
 
-        #  여러개 있다면 중복된 상태중에서 다시 무작위로 선택    
+        #  여러개 있다면 중복된 상태중에서 다시 무작위로 선택
         if np.sum(double_check) > 1:
             ## 중복값을 모두 같은 확률로 변환
             double_check = double_check / np.sum(double_check)
-            greedy_action =  np.random.choice(range(0,len(double_check)), 
-                                              p=double_check)
-        
+            greedy_action = np.random.choice(
+                range(0, len(double_check)), p=double_check
+            )
+
         # 𝜀-greedy로 행동들의 선택 확률을 계산
         pr = np.zeros(len(available_action))
 
         for i in range(len(available_action)):
             if i == greedy_action:
-                pr[i] = 1 - self.epsilon + self.epsilon/len(available_action)
+                pr[i] = 1 - self.epsilon + self.epsilon / len(available_action)
             else:
                 pr[i] = self.epsilon / len(available_action)
 
         action = np.random.choice(range(0, len(available_action)), p=pr)
 
-        return available_action[action]    
-    
+        return available_action[action]
+
     def learn_qtable(self, board_bakup, action_backup, env, reward):
         # 현재 상태와 행동을 키로 저장
         key = (board_bakup, action_backup)
@@ -87,27 +88,29 @@ class Q_learning_player():
             # 게임이 끝났을 경우 학습
             # Q(s, a) <- Q(s, a) + 𝛼 * [r - Q(s, a)]
             self.qtable[key] += self.learning_rate * (reward - self.qtable[key])
-            
+
         else:
             # 게임이 진행중일 경우 학습
             # 다음 상태의 max Q 값 계산
-            available_action = env.get_action()        
+            available_action = env.get_action()
             qvalues = np.zeros(len(available_action))
 
             for i, act in enumerate(available_action):
                 next_key = (tuple(env.board_a), act)
                 # 다음 상태를 경험한 적이 없다면(딕셔너리에 없다면) 딕셔너리에 추가(Q-value = 0)
-                if self.qtable.get(next_key) ==  None:                
+                if self.qtable.get(next_key) == None:
                     self.qtable[next_key] = 0
                 qvalues[i] = self.qtable.get(next_key)
 
             # maxQ 조사
-            maxQ = np.max(qvalues)  
-            
+            maxQ = np.max(qvalues)
+
             # 게임이 진행중일 때 학습
             # Q(s, a) <- Q(s, a) + 𝛼 * [r + 𝛾 * maxQ(s', a') - Q(s, a)]
-            self.qtable[key] += self.learning_rate*(reward + self.gamma * maxQ - self.qtable[key])
-            
+            self.qtable[key] += self.learning_rate * (
+                reward + self.gamma * maxQ - self.qtable[key]
+            )
+
 
 class Environment:
     def __init__(self):
@@ -118,7 +121,7 @@ class Environment:
         """
         self.board_a = np.zeros(9)
         self.done = False
-        self.reward = 0     # 승자(1 or -1), 무승부(0)
+        self.reward = 0  # 승자(1 or -1), 무승부(0)
         # self.winner = 0
         self.print = False  # 기본은 자동모드
 
@@ -171,11 +174,12 @@ class Environment:
         # 첫 번째 열 == 두 번째 열 (0 == 1), (3 == 4), (6 == 7)
         # 두 번째 열 == 세 번째 열 (1 == 2), (4 == 5), (7 == 8)
         # 체크하는 보드칸이 비어있지 않아야 함 => 가로 일치
-        for line in end_condition:  
-            if (self.board_a[line[0]] == self.board_a[line[1]]  
-                and self.board_a[line[1]] == self.board_a[line[2]]  
-                and self.board_a[line[0]] != 0):
-                
+        for line in end_condition:
+            if (
+                self.board_a[line[0]] == self.board_a[line[1]]
+                and self.board_a[line[1]] == self.board_a[line[2]]
+                and self.board_a[line[0]] != 0
+            ):
                 # 종료 상태, 승자 저장 후 함수 종료
                 self.done = True
                 self.reward = player
@@ -184,8 +188,8 @@ class Environment:
         # 비긴 상태 : 보드에 빈 공간이 없을 때
         observation = self.get_action()
         if len(observation) == 0:
-            self.done = True    # 종료 상태
-            self.reward = 0     # 무승부
+            self.done = True  # 종료 상태
+            self.reward = 0  # 무승부
         # return
 
     def move(self, p1, p2, player):
@@ -257,22 +261,20 @@ draw_score = 0
 max_learn = 100000
 
 for j in tqdm(range(max_learn)):
-
     env = Environment()
     for i in range(10000):
         # p1 행동 선택(p1이 둘 곳 선택)
         player = 1
         pos = p1_Qplayer.policy(env)
-        
+
         # 현재 상태 s, 행동 a 저장
         p1_board_backup = tuple(env.board_a)
         p1_action_backup = pos
-        env.board_a[pos] = player       # 보드에 착수
-        env.end_check(player)           # 게임 종료 체크
+        env.board_a[pos] = player  # 보드에 착수
+        env.end_check(player)  # 게임 종료 체크
 
         # 게임이 종료 상태라면 각 플레이어의 Q-table 학습
         if env.done:
-            
             # 비겼으면 보상 0
             if env.reward == 0:
                 p1_Qplayer.learn_qtable(p1_board_backup, p1_action_backup, env, 0)
@@ -280,15 +282,19 @@ for j in tqdm(range(max_learn)):
                 draw_score += 1
                 break
             else:
-                p1_Qplayer.learn_qtable(p1_board_backup, p1_action_backup, env, 1) # p1 승리
-                p2_Qplayer.learn_qtable(p2_board_backup, p2_action_backup, env, -1) # p2 패배
+                p1_Qplayer.learn_qtable(
+                    p1_board_backup, p1_action_backup, env, 1
+                )  # p1 승리
+                p2_Qplayer.learn_qtable(
+                    p2_board_backup, p2_action_backup, env, -1
+                )  # p2 패배
                 p1_score += 1
                 break
-            
-        # 게임이 끝나지 않았다면 p2의 Q-table을 학습 (게임 시작직후에는 p2는 학습할수 없음)    
+
+        # 게임이 끝나지 않았다면 p2의 Q-table을 학습 (게임 시작직후에는 p2는 학습할수 없음)
         if i != 0:
             p2_Qplayer.learn_qtable(p2_board_backup, p2_action_backup, env, -1)
-            
+
         # p2 행동 선택
         player = -1
         pos = p2_Qplayer.policy(env)
@@ -299,7 +305,6 @@ for j in tqdm(range(max_learn)):
 
         # 게임이 종료 상태라면 각 플레이어의 Q-table 학습
         if env.done:
-            
             # 비겼으면 보상 0
             if env.reward == 0:
                 p1_Qplayer.learn_qtable(p1_board_backup, p1_action_backup, env, 0)
@@ -307,17 +312,25 @@ for j in tqdm(range(max_learn)):
                 draw_score += 1
                 break
             else:
-                p1_Qplayer.learn_qtable(p1_board_backup, p1_action_backup, env, -1) # p1 패배
-                p2_Qplayer.learn_qtable(p2_board_backup, p2_action_backup, env, 1) # p2 승리
+                p1_Qplayer.learn_qtable(
+                    p1_board_backup, p1_action_backup, env, -1
+                )  # p1 패배
+                p2_Qplayer.learn_qtable(
+                    p2_board_backup, p2_action_backup, env, 1
+                )  # p2 승리
                 p2_score += 1
                 break
-            
+
         # 게임이 끝나지 않았다면 p1의 Q-table을 학습
         p1_Qplayer.learn_qtable(p1_board_backup, p1_action_backup, env, -1)
-        
+
     # 1000게임마다 결과 표시
     if j % 1000 == 0:
-        print('j = {}, p1 = {}, p2 = {}, draw = {}'.format(j, p1_score, p2_score, draw_score))
+        print(
+            "j = {}, p1 = {}, p2 = {}, draw = {}".format(
+                j, p1_score, p2_score, draw_score
+            )
+        )
 
 print("p1 = {} p2 = {} draw = {}".format(p1_score, p2_score, draw_score))
 print("end train")
@@ -342,7 +355,6 @@ draw_score = 0  # 무승부
 if auto:
     # 자동 모드 실행
     for j in range(games):
-
         env = Environment()
 
         for i in range(10000):
@@ -366,7 +378,7 @@ else:
     # 한 게임씩 진행하는 수동 모드
     while True:
         env = Environment()
-        env.print = True        # 사용자가 둔 곳 출력도록 옵션 설정
+        env.print = True  # 사용자가 둔 곳 출력도록 옵션 설정
         for i in range(10000):
             reward, done = env.move(p1, p2, (-1) ** i)  # p1부터 시작((-1)**i -> 1)
 

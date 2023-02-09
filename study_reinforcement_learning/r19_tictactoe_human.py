@@ -22,7 +22,7 @@ class Environment:
         """
         self.board_a = np.zeros(9)
         self.done = False
-        self.reward = 0     # 승자(1 or -1), 무승부(0)
+        self.reward = 0  # 승자(1 or -1), 무승부(0)
         # self.winner = 0
         self.print = False  # 기본은 자동모드
 
@@ -75,9 +75,10 @@ class Environment:
         # 첫 번째 열 == 두 번째 열 (0 == 1), (3 == 4), (6 == 7)
         # 두 번째 열 == 세 번째 열 (1 == 2), (4 == 5), (7 == 8)
         # 체크하는 보드칸이 비어있지 않아야 함 => 가로 일치
-        for line in end_condition:  
-            if (self.board_a[line[0]] == self.board_a[line[1]]  
-                and self.board_a[line[1]] == self.board_a[line[2]]  
+        for line in end_condition:
+            if (
+                self.board_a[line[0]] == self.board_a[line[1]]
+                and self.board_a[line[1]] == self.board_a[line[2]]
                 and self.board_a[line[0]] != 0
             ):
                 # 종료 상태, 승자 저장 후 함수 종료
@@ -88,8 +89,8 @@ class Environment:
         # 비긴 상태 : 보드에 빈 공간이 없을 때
         observation = self.get_action()
         if len(observation) == 0:
-            self.done = True    # 종료 상태
-            self.reward = 0     # 무승부
+            self.done = True  # 종료 상태
+            self.reward = 0  # 무승부
         # return
 
     def move(self, p1, p2, player):
@@ -208,7 +209,7 @@ else:
     # 한 게임씩 진행하는 수동 모드
     while True:
         env = Environment()
-        env.print = True        # 사용자가 둔 곳 출력도록 옵션 설정
+        env.print = True  # 사용자가 둔 곳 출력도록 옵션 설정
         for i in range(10000):
             reward, done = env.move(p1, p2, (-1) ** i)  # p1부터 시작((-1)**i -> 1)
 
