@@ -1,6 +1,10 @@
 # MongDB, pymongo를 이용해 회원관리 구현
 
-![](https://youtu.be/xHsJqBKmRtc)
+## 실행화면 
+
+-> 아래 이미지를 클릭하면 볼 수 있음
+
+<a href="https://youtu.be/xHsJqBKmRtc"><img src="https://user-images.githubusercontent.com/8787919/218620126-e6d8a127-7b9f-4ec4-a58b-5468db135a7a.png" width="80%" height="80%"></a>
 
 ## MongoDB docker 설치
 
